@@ -1,0 +1,2028 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>분리수거를 하자 - 모바일 센서 AI 분리배출</title>
+  <meta name="description" content="사진 한 장으로 똑똑하게 분리배출! 휴대폰 카메라와 모션 센서로 즐기는 인터랙티브 친환경 웹 앱">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --primary: #10B981;
+      --primary-dark: #059669;
+      --primary-light: #D1FAE5;
+      --primary-bg: #ECFDF5;
+      --amber: #F59E0B;
+      --amber-bg: #FEF3C7;
+      --rose: #F43F5E;
+      --rose-bg: #FFE4E6;
+      --bg: #F8FAF7;
+      --card-bg: #FFFFFF;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 26px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 12px 30px rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Pretendard", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      letter-spacing: -0.015em;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #E6F4EA;
+      padding: 12px 0;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #34D399, #10B981);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+    }
+    .brand-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #065F46;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1;
+    }
+    .brand-badge {
+      font-size: 10px;
+      font-weight: 800;
+      background: #D1FAE5;
+      color: #065F46;
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: #64748B;
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .btn-header-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 13px;
+      border-radius: 999px;
+      background: #ECFDF5;
+      color: #065F46;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid #A7F3D0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-header-action:hover {
+      background: #D1FAE5;
+    }
+    .badge-count {
+      background: #10B981;
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Main Area */
+    main {
+      flex: 1;
+      padding: 16px 0 40px;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      position: relative;
+      background: linear-gradient(135deg, #10B981 0%, #0D9488 60%, #059669 100%);
+      color: white;
+      border-radius: var(--radius-xl);
+      padding: 22px 18px;
+      box-shadow: 0 10px 24px rgba(16, 185, 129, 0.22);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .hero-title {
+      font-size: clamp(20px, 4.6vw, 26px);
+      font-weight: 900;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .hero-desc {
+      font-size: 13px;
+      color: #E6FFFA;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 18px;
+    }
+    .card-title-wrap {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #0F172A;
+    }
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Sensor Diagnostic Box */
+    .sensor-box {
+      background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+      border: 1.5px solid #C7D2FE;
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+    .sensor-box-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-sensor-start {
+      background: #4F46E5;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-sensor-start:hover {
+      background: #4338CA;
+    }
+
+    /* Live Level Gauge Pipe */
+    .sensor-gauge-wrap {
+      margin-top: 14px;
+      background: white;
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid #C7D2FE;
+    }
+    .level-pipe {
+      position: relative;
+      height: 28px;
+      background: #EEF2FF;
+      border: 2px solid #A5B4FC;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .level-center-mark {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background: #818CF8;
+      transform: translateX(-50%);
+    }
+    .level-bubble {
+      position: absolute;
+      top: 3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 22px;
+      height: 18px;
+      border-radius: 999px;
+      background: #10B981;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+      transition: left 0.08s ease-out;
+    }
+
+    /* Camera & Upload Action Grid */
+    .upload-action-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 480px) {
+      .upload-action-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .upload-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 10px;
+      border-radius: var(--radius-lg);
+      border: 2px dashed #6EE7B7;
+      background: #F0FDF4;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .upload-tile:hover {
+      background: #DCFCE7;
+      border-color: #10B981;
+      transform: translateY(-2px);
+    }
+    .upload-tile.native {
+      border-color: #38BDF8;
+      background: #F0F9FF;
+    }
+    .upload-tile.native:hover {
+      background: #E0F2FE;
+      border-color: #0284C7;
+    }
+    .upload-tile.album {
+      border-color: #FCD34D;
+      background: #FFFBEB;
+    }
+    .upload-tile.album:hover {
+      background: #FEF3C7;
+      border-color: #F59E0B;
+    }
+    .tile-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #10B981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.25);
+    }
+    .upload-tile.native .tile-icon-box {
+      background: #0284C7;
+      box-shadow: 0 4px 8px rgba(2, 132, 199, 0.25);
+    }
+    .upload-tile.album .tile-icon-box {
+      background: #D97706;
+      box-shadow: 0 4px 8px rgba(217, 119, 6, 0.25);
+    }
+    .tile-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+    .tile-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Preview Arena */
+    .preview-box {
+      max-width: 260px;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+    .preview-wrap {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-lg);
+      background: #F1F5F9;
+      border: 3px solid #34D399;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-md);
+    }
+    .preview-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 6px;
+    }
+    .btn-change-photo {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.8);
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Main CTA button */
+    .btn-main-analyze {
+      width: 100%;
+      max-width: 340px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, #10B981, #059669);
+      color: white;
+      font-size: 15px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-main-analyze:disabled {
+      background: #CBD5E1;
+      color: #94A3B8;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* Samples Grid */
+    .samples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    .sample-tile {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sample-tile:hover {
+      background: white;
+      border-color: #34D399;
+      transform: translateY(-2px);
+    }
+    .sample-svg-wrap {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sample-name {
+      font-size: 12px;
+      font-weight: 800;
+      color: #1E293B;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sample-pill {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-top: 4px;
+    }
+    .pill-green { background: #D1FAE5; color: #065F46; }
+    .pill-orange { background: #FEF3C7; color: #92400E; }
+    .pill-red { background: #FFE4E6; color: #9F1239; }
+
+    /* 11 Bins Grid */
+    .bins-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    @media (min-width: 640px) {
+      .bins-grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+    @media (min-width: 768px) {
+      .bins-grid {
+        grid-template-columns: repeat(11, 1fr);
+      }
+    }
+    .bin-tile {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .bin-tile:hover {
+      border-color: #34D399;
+      transform: translateY(-2px);
+    }
+    .bin-box {
+      width: 36px;
+      height: 42px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 3px;
+      color: white;
+      margin-bottom: 5px;
+    }
+    .bin-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #334155;
+    }
+
+    /* Camera Screen in Modal */
+    .camera-screen {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #cameraVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+    .camera-guide-box {
+      position: absolute;
+      inset: 12%;
+      border: 2px dashed rgba(52, 211, 153, 0.8);
+      border-radius: 16px;
+      pointer-events: none;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 8px;
+    }
+    .camera-guide-text {
+      background: rgba(0,0,0,0.65);
+      color: #34D399;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+      text-align: center;
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-box {
+      background: white;
+      width: 100%;
+      max-width: 480px;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header {
+      padding: 14px 18px;
+      background: #F8FAFC;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #94A3B8;
+      cursor: pointer;
+    }
+
+    /* Result View */
+    .result-banner {
+      padding: 20px;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    @media (min-width: 580px) {
+      .result-banner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+    .banner-green { background: linear-gradient(135deg, #10B981, #0D9488); }
+    .banner-orange { background: linear-gradient(135deg, #F59E0B, #EA580C); }
+    .banner-red { background: linear-gradient(135deg, #F43F5E, #E11D48); }
+    .result-body {
+      background: white;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 20px;
+    }
+
+    /* Tilt Game Arena */
+    .tilt-arena {
+      background: linear-gradient(180deg, #EFF6FF, #E0E7FF);
+      border: 2px solid #818CF8;
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 20px;
+    }
+    .tilt-play-field {
+      position: relative;
+      height: 160px;
+      border: 1px dashed #A5B4FC;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.5);
+      overflow: hidden;
+      margin: 12px 0;
+    }
+    .tilt-trash-object {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      background: white;
+      border: 2px solid #6366F1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+    }
+    .tilt-bins-dock {
+      display: flex;
+      justify-content: space-around;
+      gap: 8px;
+    }
+    .tilt-dock-target {
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: white;
+      border: 2px solid #CBD5E1;
+      text-align: center;
+      min-width: 68px;
+      transition: all 0.2s;
+    }
+    .tilt-dock-target.highlight {
+      border-color: #10B981;
+      background: #D1FAE5;
+      transform: scale(1.06);
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    footer {
+      background: white;
+      border-top: 1px solid var(--border);
+      padding: 14px 0;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="container header-inner">
+      <div class="brand" onclick="goHome()">
+        <div class="brand-icon">
+          <!-- Leaf SVG -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            분리수거를 하자
+            <span class="brand-badge">센서 & AI</span>
+          </div>
+          <div class="brand-sub">순수 단일 HTML · 모바일 센서 & 카메라</div>
+        </div>
+      </div>
+
+      <button class="btn-header-action" onclick="openHistoryModal()">
+        <span>📜 최근 기록</span>
+        <span class="badge-count" id="historyCount">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Area -->
+  <main class="container">
+
+    <!-- VIEW 1: HOME -->
+    <div id="viewHome">
+      <!-- Hero Banner -->
+      <section class="hero-banner">
+        <div class="hero-tag">스마트폰 센서 & 지능형 분석</div>
+        <h2 class="hero-title">사진 한 장으로 똑똑하게<br>분리배출 마스터!</h2>
+        <p class="hero-desc">
+          버릴 물건을 카메라로 촬영하거나 사진을 선택하세요.<br>
+          스마트폰 센서를 시작하여 기울기로 직접 골인시키는 모션 기능도 지원해요.
+        </p>
+      </section>
+
+      <!-- Smartphone Sensor Activation & Diagnostic Box -->
+      <section class="sensor-box">
+        <div class="sensor-box-top">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: #4F46E5; display: flex; align-items: center; justify-content: center; color: white;">
+              <!-- Motion SVG -->
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+                <path d="M12 18h.01"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 900; color: #312E81;">📱 휴대폰 모션/기울기 센서</div>
+              <div style="font-size: 11px; color: #4338CA;" id="sensorStatusText">
+                시작 버튼을 눌러 권한을 허용하면 실시간 기울기가 감지됩니다.
+              </div>
+            </div>
+          </div>
+
+          <button id="btnSensorStart" class="btn-sensor-start" onclick="requestPhoneSensors()">
+            <span>▶ 센서 시작 (권한 요청)</span>
+          </button>
+        </div>
+
+        <!-- Live Bubble Level & Interactive Tilt Test -->
+        <div class="sensor-gauge-wrap" id="sensorGaugeWrap" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 800; color: #3730A3;">
+            <span>실시간 수평계 (좌우 기울여보세요)</span>
+            <span id="sensorAngleDisplay">기울기: 0° (수평)</span>
+          </div>
+
+          <div class="level-pipe">
+            <div class="level-center-mark"></div>
+            <div id="liveLevelBubble" class="level-bubble"></div>
+          </div>
+
+          <!-- Tactile Control fallback buttons (Works on desktop & mobile) -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; flex-wrap: wrap; gap: 6px;">
+            <div style="display: flex; gap: 6px;">
+              <button style="background: #E0E7FF; border: 1px solid #C7D2FE; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #3730A3; cursor: pointer;" onclick="manualTilt(-20)">◀ 좌로</button>
+              <button style="background: #E0E7FF; border: 1px solid #C7D2FE; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #3730A3; cursor: pointer;" onclick="manualTilt(0)">0°</button>
+              <button style="background: #E0E7FF; border: 1px solid #C7D2FE; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #3730A3; cursor: pointer;" onclick="manualTilt(20)">우로 ▶</button>
+              <button style="background: #EEF2FF; border: 1px solid #C7D2FE; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #4F46E5; cursor: pointer;" onclick="toggleSensorInvert()" title="기울기 방향이 반대일 때 클릭">⇄ 반전</button>
+            </div>
+
+            <button style="background: #10B981; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;" onclick="loadSample('pet')">
+              🎮 이 센서로 페트병 골인 테스트 &rarr;
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Photo Upload & Camera Card -->
+      <section class="card">
+        <div class="card-title-wrap">
+          <h3 class="card-title">분리배출할 물건을 올려주세요</h3>
+          <p class="card-subtitle">스마트폰 카메라로 촬영하거나 앨범에서 선택하세요</p>
+        </div>
+
+        <!-- 3 Upload Choices for 100% Mobile Reliability -->
+        <div id="uploadButtonsZone" class="upload-action-grid">
+          <!-- 1. Live WebRTC Camera Modal -->
+          <div class="upload-tile" onclick="openCameraModal()">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
+              </svg>
+            </div>
+            <div class="tile-title">실시간 카메라</div>
+            <div class="tile-desc">화면을 보며 직접 촬영</div>
+          </div>
+
+          <!-- 2. Mobile Native Camera (Foolproof across ALL smartphones) -->
+          <div class="upload-tile native" onclick="document.getElementById('nativeCameraCapture').click()">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <div class="tile-title">폰 기본 카메라</div>
+            <div class="tile-desc">기본 카메라 앱으로 찍기</div>
+          </div>
+
+          <!-- 3. Album Picker -->
+          <label class="upload-tile album">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+            </div>
+            <div class="tile-title">사진 앨범 선택</div>
+            <div class="tile-desc">갤러리 및 로컬 사진</div>
+            <input type="file" accept="image/*" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+          </label>
+
+          <!-- Hidden Native Camera Input with capture="environment" -->
+          <input type="file" accept="image/*" capture="environment" id="nativeCameraCapture" style="display: none;" onchange="handleFileSelect(event)">
+        </div>
+
+        <!-- Preview Box -->
+        <div id="previewZone" style="display: none;">
+          <div class="preview-box">
+            <div class="preview-wrap">
+              <img id="previewImg" src="" alt="Selected Preview">
+            </div>
+            <button class="btn-change-photo" onclick="resetSelectedImage()">사진 변경</button>
+          </div>
+          <div style="text-align: center; font-size: 12px; color: #059669; font-weight: 800; margin-bottom: 12px;">
+            ✓ 사진이 준비되었습니다
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="btnStartAnalyze" class="btn-main-analyze" disabled onclick="startAnalysis()">
+          사진을 먼저 선택해주세요
+        </button>
+      </section>
+
+      <!-- Instant Test Samples -->
+      <section class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div>
+            <h4 class="card-title" style="font-size: 15px;">🌟 인기 샘플로 1초 만에 테스트</h4>
+            <p class="card-subtitle">주변에 쓰레기가 없다면 아래 대표 샘플을 바로 눌러보세요!</p>
+          </div>
+          <span class="sample-pill pill-green">무료 즉시 체험</span>
+        </div>
+
+        <div class="samples-grid">
+          <div class="sample-tile" onclick="loadSample('pet')">
+            <div class="sample-svg-wrap" id="svgPet"></div>
+            <div class="sample-name">투명 페트병</div>
+            <span class="sample-pill pill-orange">조건부 분리</span>
+          </div>
+
+          <div class="sample-tile" onclick="loadSample('box')">
+            <div class="sample-svg-wrap" id="svgBox"></div>
+            <div class="sample-name">택배 종이상자</div>
+            <span class="sample-pill pill-orange">테이프 제거</span>
+          </div>
+
+          <div class="sample-tile" onclick="loadSample('can')">
+            <div class="sample-svg-wrap" id="svgCan"></div>
+            <div class="sample-name">알루미늄 캔</div>
+            <span class="sample-pill pill-green">재활용 가능</span>
+          </div>
+
+          <div class="sample-tile" onclick="loadSample('battery')">
+            <div class="sample-svg-wrap" id="svgBattery"></div>
+            <div class="sample-name">폐건전지 AA</div>
+            <span class="sample-pill pill-red">전용함 필수</span>
+          </div>
+
+          <div class="sample-tile" onclick="loadSample('glass')">
+            <div class="sample-svg-wrap" id="svgGlass"></div>
+            <div class="sample-name">깨진 유리컵</div>
+            <span class="sample-pill pill-red">일반 종량제</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11 Bins Grid -->
+      <section class="card">
+        <div style="margin-bottom: 12px;">
+          <h4 class="card-title" style="font-size: 15px;">🗂️ 대한민국 환경부 11대 분리배출함</h4>
+          <p class="card-subtitle">누르면 배출 규정 및 자주 헷갈리는 Q&A를 확인할 수 있습니다</p>
+        </div>
+        <div class="bins-grid" id="binsContainer"></div>
+      </section>
+    </div>
+
+    <!-- VIEW 2: ANALYZING LOADING -->
+    <div id="viewAnalyzing" style="display: none;">
+      <div style="text-align: center; padding: 40px 16px;">
+        <div style="position: relative; width: 160px; height: 160px; border-radius: 24px; overflow: hidden; border: 4px solid #34D399; margin: 0 auto 20px; background: #0F172A;">
+          <img id="analyzingImg" src="" alt="Scanning" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
+          <div style="position: absolute; left: 0; right: 0; height: 3px; background: #34D399; box-shadow: 0 0 15px #34D399; animation: scanLaser 1.8s ease-in-out infinite alternate;"></div>
+        </div>
+
+        <h3 style="font-size: 20px; font-weight: 900; color: #0F172A; margin-bottom: 6px;">
+          재질과 환경부 가이드라인 분석 중...
+        </h3>
+        <p style="font-size: 13px; color: #64748B; margin-bottom: 20px;">
+          복합 재질(라벨, 뚜껑)과 분리배출 가능 여부를 검토하고 있습니다.
+        </p>
+
+        <div style="max-width: 320px; margin: 0 auto; background: white; border-radius: 16px; padding: 14px; border: 1px solid var(--border); text-align: left; font-size: 12px; font-weight: 700; color: #059669;">
+          <div>✓ 1단계: 사진 속 물건 모양 식별</div>
+          <div style="margin-top: 6px;">✓ 2단계: 본체와 분리 부속품(라벨·뚜껑) 분해</div>
+          <div style="margin-top: 6px;">⏳ 3단계: 환경부 분리배출함 매칭 완료</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: MOTION SENSOR INTERACTIVE GAME & SIMULATOR -->
+    <div id="viewMotion" style="display: none;">
+      <div class="tilt-arena">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C7D2FE; padding-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: #4F46E5; color: white; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px;">모션 센서 모드</span>
+            <strong style="font-size: 14px; color: #1E1B4B;">폰을 기울여서 골인시키기!</strong>
+          </div>
+          <button style="background: none; border: 1px solid #C7D2FE; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; color: #3730A3; cursor: pointer;" onclick="skipToResult()">
+            결과 바로보기 &rarr;
+          </button>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: center; gap: 14px; background: rgba(255,255,255,0.7); padding: 6px 14px; border-radius: 999px; font-size: 11px; font-weight: 700; color: #3730A3; margin: 10px auto;">
+          <span>좌우 기울기: <b id="tiltAngleVal">0°</b></span>
+          <span style="color: #6366F1;">|</span>
+          <span id="shakeNotice">💡 폰을 흔들면 "깨끗이 세척"!</span>
+        </div>
+
+        <div class="tilt-play-field" id="tiltField">
+          <div class="tilt-trash-object" id="tiltObject">
+            <div id="tiltObjectIcon" style="width: 34px; height: 34px;"></div>
+          </div>
+        </div>
+
+        <div>
+          <!-- On-screen arrows & tilt fallback controls -->
+          <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
+            <button style="background: white; border: 1px solid #818CF8; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 800; color: #4338CA; cursor: pointer;" onclick="manualTilt(-25)">◀ 좌로</button>
+            <button style="background: white; border: 1px solid #CBD5E1; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; color: #475569; cursor: pointer;" onclick="manualTilt(0)">0° 수평</button>
+            <button style="background: white; border: 1px solid #818CF8; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 800; color: #4338CA; cursor: pointer;" onclick="manualTilt(25)">우로 ▶</button>
+            <button style="background: #EEF2FF; border: 1px solid #C7D2FE; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 800; color: #4F46E5; cursor: pointer;" onclick="toggleSensorInvert()" title="센서 방향 반전">⇄ 반전</button>
+          </div>
+
+          <div class="tilt-bins-dock" id="tiltBinsDock">
+            <!-- Target bins dynamically inserted -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: DETAILED RESULT -->
+    <div id="viewResult" style="display: none;">
+      <div id="resultBanner" class="result-banner banner-green">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div id="resultStatusIcon" style="font-size: 32px;">🟢</div>
+          <div>
+            <div id="resultCategoryText" style="font-size: 11px; font-weight: 800; background: rgba(255,255,255,0.22); padding: 2px 8px; border-radius: 999px; display: inline-block; margin-bottom: 4px;">
+              플라스틱 배출 품목
+            </div>
+            <h2 id="resultStatusLabel" style="font-size: 24px; font-weight: 900;">재활용 가능</h2>
+            <div id="resultConfidenceText" style="font-size: 11px; color: rgba(255,255,255,0.9); margin-top: 2px;">
+              신뢰도 98% · 대한민국 환경부 기준 분석
+            </div>
+          </div>
+        </div>
+
+        <button style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer;" onclick="restartMotionMode()">
+          🎮 센서로 다시 조종하기
+        </button>
+      </div>
+
+      <div class="result-body">
+        <div style="display: flex; gap: 14px; align-items: center; background: #F8FAFC; border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 16px;">
+          <div style="width: 70px; height: 70px; border-radius: 10px; background: white; border: 1px solid var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <img id="resultPhotoThumb" src="" alt="Thumbnail" style="width: 100%; height: 100%; object-fit: contain;">
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 800; color: #64748B;">식별된 물건</div>
+            <h3 style="font-size: 17px; font-weight: 900; color: #0F172A;" id="resultItemName">투명 페트병</h3>
+            <div style="font-size: 12px; color: #334155; font-weight: 600; margin-top: 2px;">
+              주요 재질: <span id="resultItemMaterial" style="color: #059669; font-weight: 800;">PET</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 14px; font-weight: 900; color: #0F172A; margin-bottom: 8px;">
+          ℹ️ 왜 이렇게 분리배출해야 할까요?
+        </div>
+        <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 14px; padding: 14px; font-size: 13px; color: #14532D; line-height: 1.5; margin-bottom: 16px;" id="resultReasonText"></div>
+
+        <div id="resultComponentsSection" style="margin-bottom: 16px;">
+          <div style="font-size: 14px; font-weight: 900; color: #0F172A; margin-bottom: 8px;">
+            📑 부품별 분리배출 상세 가이드
+          </div>
+          <div id="resultComponentsList" style="display: flex; flex-direction: column; gap: 6px;"></div>
+        </div>
+
+        <div style="font-size: 14px; font-weight: 900; color: #0F172A; margin-bottom: 8px;">
+          ✅ 올바른 실천 4단계
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;" id="resultStepsList"></div>
+
+        <div style="background: #FEF3C7; border: 1px solid #FDE68A; border-radius: 12px; padding: 12px; font-size: 12px; color: #92400E; margin-bottom: 18px;" id="resultPrecautionsText"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 14px;">
+          <button style="background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;" onclick="copyResultText()">
+            📋 결과 복사하기
+          </button>
+          <button style="background: #10B981; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer;" onclick="goHome()">
+            🔄 다른 물건 분석하기
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal: Live Camera with Auto-play Stream -->
+  <div id="modalCamera" class="modal-backdrop" style="display: none;" onclick="closeCameraModal(event)">
+    <div class="modal-box" style="background: black; max-width: 440px;" onclick="event.stopPropagation()">
+      <div style="padding: 12px 16px; background: rgba(0,0,0,0.85); display: flex; justify-content: space-between; align-items: center; color: white;">
+        <span style="font-size: 13px; font-weight: 800;">📷 실시간 카메라 물건 촬영</span>
+        <button class="modal-close" style="color: white;" onclick="closeCameraModal()">✕</button>
+      </div>
+
+      <div class="camera-screen">
+        <video id="cameraVideo" autoplay playsinline webkit-playsinline muted></video>
+        <div class="camera-guide-box">
+          <div id="cameraStatusText" class="camera-guide-text">카메라 연결 중...</div>
+        </div>
+      </div>
+
+      <div style="padding: 14px; background: #020617; display: flex; align-items: center; justify-content: space-around;">
+        <button style="background: none; border: none; color: #94A3B8; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center;" onclick="toggleCameraFace()">
+          <span style="font-size: 18px;">🔄</span>
+          <span>전/후면 전환</span>
+        </button>
+
+        <button style="width: 58px; height: 58px; border-radius: 50%; background: white; border: 4px solid #10B981; cursor: pointer;" onclick="snapPhoto()"></button>
+
+        <button style="background: none; border: none; color: #94A3B8; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center;" onclick="closeCameraModal(); document.getElementById('nativeCameraCapture').click();">
+          <span style="font-size: 18px;">📸</span>
+          <span>폰 기본앱</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Category Guide -->
+  <div id="modalCategory" class="modal-backdrop" style="display: none;" onclick="closeModalCategory(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span id="catModalTitle">플라스틱 배출 가이드</span>
+        </div>
+        <button class="modal-close" onclick="closeModalCategory()">✕</button>
+      </div>
+      <div class="modal-body" id="catModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Modal: History -->
+  <div id="modalHistory" class="modal-backdrop" style="display: none;" onclick="closeModalHistory(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>📜 최근 분석 기록</span>
+        </div>
+        <button class="modal-close" onclick="closeModalHistory()">✕</button>
+      </div>
+      <div class="modal-body" id="historyListContainer" style="padding: 12px;"></div>
+      <div style="padding: 12px 16px; background: #F8FAFC; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <button style="background: none; border: 1px solid #FECDD3; color: #E11D48; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;" onclick="clearAllHistory()">
+          전체 기록 삭제
+        </button>
+        <span style="font-size: 11px; color: #64748B;">브라우저 LocalStorage 보관</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <strong>분리수거를 하자</strong> · 대한민국 환경부 분리배출 공식 지침 준수<br>
+      단일 파일 HTML · React/TypeScript 미사용 · 외부 이미지 & API 키 0개
+    </div>
+  </footer>
+
+  <!-- Pure Vanilla JavaScript -->
+  <script>
+    /* 100% INLINE SVGs FOR ZERO EXTERNAL IMAGES */
+    const SVG_ICONS = {
+      pet: '<svg viewBox="0 0 100 100" width="100%" height="100%"><rect x="35" y="10" width="30" height="12" rx="3" fill="#0284C7"/><path d="M35 22C35 22 25 35 25 55V85C25 89 28 92 32 92H68C72 92 75 89 75 85V55C75 35 65 22 65 22H35Z" fill="#BAE6FD" stroke="#0284C7" stroke-width="4"/><rect x="25" y="48" width="50" height="24" fill="#FFFFFF" opacity="0.95"/><text x="50" y="64" font-size="9" font-weight="bold" fill="#0284C7" text-anchor="middle">WATER</text></svg>',
+      box: '<svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M15 35L50 18L85 35V70L50 87L15 70V35Z" fill="#D97706"/><path d="M15 35L50 52L85 35" stroke="#B45309" stroke-width="3"/><path d="M50 52V87" stroke="#B45309" stroke-width="3"/><rect x="36" y="24" width="28" height="34" transform="rotate(-15 50 40)" fill="#FBBF24" opacity="0.85"/></svg>',
+      can: '<svg viewBox="0 0 100 100" width="100%" height="100%"><rect x="30" y="20" width="40" height="65" rx="8" fill="#818CF8"/><ellipse cx="50" cy="20" rx="20" ry="6" fill="#C7D2FE" stroke="#4338CA" stroke-width="2"/><ellipse cx="50" cy="85" rx="20" ry="6" fill="#4F46E5"/><text x="50" y="56" font-size="11" font-weight="bold" fill="#FFFFFF" text-anchor="middle">SODA</text></svg>',
+      battery: '<svg viewBox="0 0 100 100" width="100%" height="100%"><rect x="32" y="26" width="36" height="60" rx="6" fill="#F43F5E"/><rect x="44" y="18" width="12" height="8" rx="2" fill="#9F1239"/><text x="50" y="60" font-size="14" font-weight="900" fill="#FFFFFF" text-anchor="middle">AA</text></svg>',
+      glass: '<svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M30 25L42 75L58 75L70 25Z" fill="#C084FC" opacity="0.8"/><path d="M40 38L55 60L48 72" stroke="#7E22CE" stroke-width="3"/><path d="M58 42L64 50" stroke="#7E22CE" stroke-width="3"/></svg>'
+    };
+
+    /* 11 Official Korean Recycling Categories */
+    const CATEGORIES = [
+      { id: 'plastic', name: '플라스틱', color: '#3B82F6', desc: '페트병, 플라스틱 용기류 (내용물 비우고 라벨 제거)',
+        rules: ['내용물을 비우고 물로 깨끗이 헹궈주세요.', '부착된 비닐 라벨과 테이프를 완전히 떼어내주세요.', '부피를 줄이기 위해 발로 밟아 압착해주세요.', '투명 페트병은 별도 전용 수거함에 배출하세요.'],
+        tips: ['기름때나 음식물이 지워지지 않는 용기는 일반쓰레기(종량제)로 버려야 해요.', '칫솔, 알약 포장재 등 복합 재질은 재활용이 어렵습니다.'] },
+      { id: 'vinyl', name: '비닐류', color: '#F59E0B', desc: '과자봉지, 에어캡(뽁뽁이), 라면봉지 등',
+        rules: ['내용물을 비우고 물로 헹궈 이물질을 제거하세요.', '흩날리지 않게 투명 봉투에 모아서 묶어 배출하세요.', '테이프, 송장 스티커는 떼어내주세요.'],
+        tips: ['깨끗하게 세척된 비닐은 색상에 상관없이 모두 재활용 가능해요!', '음식물이 묻어 안 씻기는 비닐은 종량제 봉투에 버리세요.'] },
+      { id: 'paper', name: '종이류', color: '#D97706', desc: '신문지, 골판지 박스, 책자류',
+        rules: ['박스 표면의 테이프와 택배 송장을 전부 제거해주세요.', '박스는 납작하게 펼친 후 끈으로 묶어 배출하세요.', '물에 젖지 않도록 보관 후 배출하세요.'],
+        tips: ['영수증(감열지), 기름 묻은 피자박스 밑판, 코팅된 전단지는 종량제 봉투에 버려주세요.'] },
+      { id: 'paperpack', name: '종이팩', color: '#10B981', desc: '우유팩(살균팩), 두유팩(멸균팩)',
+        rules: ['일반 종이와 섞지 말고 종이팩 전용함에 따로 배출하세요.', '내용물을 비우고 물로 깨끗이 헹궈주세요.', '가위로 펼쳐서 말린 후 차곡차곡 묶어서 배출하세요.'],
+        tips: ['종이팩은 고급 천연펄프라 일반 종이와 섞이면 재활용되지 못해요.', '주민센터에 모아가면 두루마리 휴지나 종량제 봉투로 교환해줘요!'] },
+      { id: 'glass', name: '유리병', color: '#0D9488', desc: '음료수병, 와인병, 잼병 등',
+        rules: ['병 안의 내용물을 완전히 비우고 물로 헹궈주세요.', '금속이나 플라스틱 병뚜껑은 분리해서 따로 배출하세요.', '담배꽁초 등 이물질을 병에 넣지 마세요.'],
+        tips: ['빈용기보증금 표시가 있는 소주/맥주병은 마트에 반환하면 보증금을 받아요.', '⚠️ 깨진 유리, 거울, 도자기그릇은 유리병 수거함에 절대 넣지 말고 신문지에 싸서 종량제에 버려야 해요.'] },
+      { id: 'can', name: '캔·고철', color: '#6366F1', desc: '알루미늄 캔, 철캔, 냄비, 프라이팬',
+        rules: ['내용물을 비우고 물로 헹군 후 발로 밟아 압착하세요.', '플라스틱 뚜껑은 분리해서 따로 버려주세요.', '부탄가스는 야외에서 잔류 가스를 배출하고 구멍을 뚫어 배출하세요.'],
+        tips: ['알루미늄 캔은 100% 무한 재활용되는 최고의 친환경 자원입니다.'] },
+      { id: 'general', name: '일반쓰레기', color: '#64748B', desc: '종량제 봉투에 담아 버리는 재활용 불가 품목',
+        rules: ['지자체 규격 종량제 봉투에 담아 묶어서 배출하세요.', '날카로운 물건은 신문지나 박스로 감싸서 안전하게 버려주세요.'],
+        tips: ['복합 재질로 분리가 안 되는 물건(가죽, 고무장갑, 칫솔 등)은 일반쓰레기입니다.'] },
+      { id: 'food', name: '음식물', color: '#EA580C', desc: '가축의 사료나 퇴비로 재활용 가능한 유기성 폐기물',
+        rules: ['물기를 꾹 짜서 수분을 최대한 없앤 후 전용 용기에 배출하세요.', '비닐, 이쑤시개 등 이물질이 섞이지 않게 골라내세요.'],
+        tips: ['기준: "가축이 먹을 수 있는가?" 뼈, 조개껍데기, 달걀껍질, 양파껍질은 일반쓰레기입니다.'] },
+      { id: 'battery', name: '폐건전지', color: '#E11D48', desc: '수은, 알칼리, 리튬 건전지 및 보조배터리',
+        rules: ['절대 일반 종량제 봉투에 버리지 마세요! 화재와 오염을 유발합니다.', '아파트 단지나 주민센터 전용 수거함에 배출하세요.'],
+        tips: ['많은 지자체 주민센터에서 폐건전지 10~20개를 모아오면 새 건전지로 교환해줘요.'] },
+      { id: 'ewaste', name: '전자제품', color: '#0284C7', desc: '헤어드라이어, 선풍기, 휴대폰 등 가전제품',
+        rules: ['소형 가전은 주민센터나 아파트 전용함에 배출하세요.', '대형 가전이나 소형 가전 5개 이상은 1599-0903(무상방문수거)을 부르면 무료로 수거해갑니다.'],
+        tips: ['www.15990903.or.kr 에서 전국 어디서나 정부 지원 무료 수거 신청이 가능해요.'] },
+      { id: 'special', name: '기타 별도', color: '#7C3AED', desc: '형광등, 폐의약품, 의류, 깨진 유리 등',
+        rules: ['폐형광등: 깨지지 않게 전용 수거함 배출.', '폐의약품: 약국이나 보건소 수거함에 배출.', '깨진 유리/사기: 신문지에 싸서 종량제 또는 불연성 특수 마대 배출.'],
+        tips: ['대형 가구/매트리스는 구청 홈페이지에서 대형폐기물 스티커를 발급받아야 합니다.'] }
+    ];
+
+    /* Sample Items Knowledge Base */
+    const SAMPLES = {
+      pet: {
+        name: '투명 생수 페트병 (라벨 부착)',
+        material: 'PET (몸체), 비닐 PP/PE (라벨), 플라스틱 (뚜껑)',
+        category: '플라스틱',
+        categoryId: 'plastic',
+        status: 'conditional',
+        statusColor: 'orange',
+        statusLabel: '조건부 재활용 가능',
+        confidence: 98,
+        reason: '본체는 고품질 의류용 재생 섬유로 재활용되는 소중한 자원이지만, 비닐 라벨과 뚜껑이 함께 있으면 재활용 공정에서 불량이 발생합니다. 반드시 라벨을 뜯어내고 분리해야 합니다.',
+        steps: [
+          '내용물을 깨끗이 비우고 물로 헹궈주세요.',
+          '절취선을 따라 비닐 라벨을 뜯어 비닐류 수거함에 버려주세요.',
+          '페트병을 납작하게 밟아 부피를 줄여주세요.',
+          '뚜껑을 닫거나 따로 분리하여 [투명 페트병 전용 수거함]에 넣어주세요.'
+        ],
+        components: [
+          { part: '페트병 본체', material: '투명 무색 PET', bin: '투명 페트병 전용함', action: '비우고 압착 후 배출' },
+          { part: '상표 라벨', material: '비닐(PP/PE)', bin: '비닐류 수거함', action: '절취선 따라 뜯어 분리' },
+          { part: '뚜껑 및 고리', material: '플라스틱(PP)', bin: '플라스틱 수거함', action: '압착 후 닫거나 따로 배출' }
+        ],
+        precautions: '유색 플라스틱과 섞이지 않도록 반드시 [투명 페트병 전용함]에 넣어주세요!'
+      },
+      box: {
+        name: '골판지 택배 박스 (테이프 부착)',
+        material: '골판지 종이, OPP 비닐 테이프, 운송장 스티커',
+        category: '종이류',
+        categoryId: 'paper',
+        status: 'conditional',
+        statusColor: 'orange',
+        statusLabel: '조건부 재활용 가능',
+        confidence: 96,
+        reason: '골판지 상자는 우수한 재생 종이 자원이지만, 표면에 붙은 비닐 테이프와 송장 스티커는 물에 녹지 않아 종이 재생을 방해합니다. 테이프를 떼어내야만 재활용이 가능합니다.',
+        steps: [
+          '박스 겉면의 박스 테이프를 손으로 잡아당겨 전부 떼어내세요.',
+          '개인정보가 적힌 택배 송장 스티커를 떼어 일반쓰레기로 버리세요.',
+          '박스를 납작하게 펼쳐 부피를 줄여주세요.',
+          '차곡차곡 묶어서 종이류 배출 장소에 놓아주세요.'
+        ],
+        components: [
+          { part: '골판지 상자', material: '재생 종이', bin: '종이류 수거함', action: '테이프 제거 후 펼쳐 배출' },
+          { part: '박스 테이프', material: '비닐(OPP)', bin: '일반쓰레기(종량제)', action: '박스에서 뜯어내어 배출' },
+          { part: '운송장 스티커', material: '감열지', bin: '일반쓰레기(종량제)', action: '개인정보 보호 겸 분리' }
+        ],
+        precautions: '비나 눈에 젖지 않도록 맑은 날 배출하거나 지붕이 있는 배출 장소에 놓아주세요.'
+      },
+      can: {
+        name: '알루미늄 탄산음료 캔',
+        material: '단일 알루미늄 (ALU)',
+        category: '캔·고철',
+        categoryId: 'can',
+        status: 'recyclable',
+        statusColor: 'green',
+        statusLabel: '재활용 가능',
+        confidence: 99,
+        reason: '알루미늄 캔은 100% 무한대로 다시 녹여 새 캔으로 만들 수 있는 대표적인 친환경 자원입니다. 분리배출만 잘하면 거의 영구적으로 자원이 순환됩니다.',
+        steps: [
+          '캔 속 음료수를 남김없이 쏟아 비워주세요.',
+          '물로 가볍게 한 번 헹궈 악취와 벌레 꼬임을 방지하세요.',
+          '발로 밟아 납작하게 찌그러뜨려 부피를 줄여주세요.',
+          '캔·고철류 전용 분리수거함에 넣어주세요.'
+        ],
+        components: [
+          { part: '캔 본체 및 뚜껑', material: '알루미늄', bin: '캔·고철 수거함', action: '비우고 압착하여 배출' }
+        ],
+        precautions: '캔 뚜껑 고리는 억지로 떼지 말고 캔과 함께 배출하세요.'
+      },
+      battery: {
+        name: '다 쓴 폐건전지 (AA/AAA)',
+        material: '아연, 망간, 니켈 등 중금속 화학 복합재',
+        category: '폐건전지',
+        categoryId: 'battery',
+        status: 'non_recyclable',
+        statusColor: 'red',
+        statusLabel: '전용 수거함 배출 필수 (종량제 절대 금지)',
+        confidence: 99,
+        reason: '일반 쓰레기봉투에 버려 소각되거나 매립되면 토양과 지하수를 심각하게 오염시키고 수거 차량 화재를 유발합니다. 반드시 아파트나 주민센터의 전용 수거함에 배출해야 안전하게 금속을 회수합니다.',
+        steps: [
+          '일반 쓰레기 종량제 봉투에 절대 넣지 마세요.',
+          '리튬 전지는 전극 부위에 투명 테이프를 붙이면 화재를 방지해요.',
+          '아파트 단지 내 폐건전지 수거함이나 동주민센터 전용함에 넣으세요.',
+          '주민센터에서 10~20개를 모아가면 새 건전지로 교환해줘요!'
+        ],
+        components: [
+          { part: '전지 본체', material: '중금속/화학물', bin: '폐건전지 전용 수거함', action: '종량제 투입 금지! 전용함 배출' }
+        ],
+        precautions: '녹슬거나 누액이 흐르지 않도록 건조한 상태로 모아서 배출하세요.'
+      },
+      glass: {
+        name: '깨진 유리컵 조각',
+        material: '파손된 유리 (위험 폐기물)',
+        category: '기타 별도',
+        categoryId: 'special',
+        status: 'non_recyclable',
+        statusColor: 'red',
+        statusLabel: '재활용 불가 (안전 포장 후 일반 종량제)',
+        confidence: 97,
+        reason: '깨진 유리는 재활용 선별 작업자의 손을 심각하게 베이게 할 수 있고, 일반 유리병 재활용 가공 라인에 들어갈 수 없어 유리병 수거함에 넣으면 절대 안 됩니다.',
+        steps: [
+          '깨진 유리 파편을 여러 겹의 두꺼운 신문지나 종이상자로 감싸세요.',
+          '테이프로 단단히 밀봉하여 파편이 튀어나오지 않게 하세요.',
+          '겉면에 매직으로 크게 "깨진 유리 주의"라고 써주세요.',
+          '종량제 봉투에 담아 배출하거나 양이 많으면 불연성 특수 마대에 담으세요.'
+        ],
+        components: [
+          { part: '깨진 유리 파편', material: '유리', bin: '신문지 포장 후 종량제 봉투', action: '다치지 않게 두껍게 감싸서 배출' }
+        ],
+        precautions: '환경미화원 분들의 안전을 위해 테이프로 꼼꼼하게 밀봉하는 배려가 꼭 필요합니다!'
+      }
+    };
+
+    /* App State */
+    let selectedImageBase64 = null;
+    let currentResult = null;
+    let historyList = [];
+    let cameraStream = null;
+    let cameraFacing = 'environment';
+
+    /* Sensor & Tilt State */
+    let sensorActive = false;
+    let hasReceivedSensorData = false;
+    let sensorInverted = false;
+    let lastMotionTimestamp = 0;
+    let tiltX = 0; // -1 to +1
+    let objX = 50; // percentage
+    let animFrameId = null;
+    let lastShakeTime = 0;
+    let lastAccel = { x: 0, y: 0, z: 0 };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('svgPet').innerHTML = SVG_ICONS.pet;
+      document.getElementById('svgBox').innerHTML = SVG_ICONS.box;
+      document.getElementById('svgCan').innerHTML = SVG_ICONS.can;
+      document.getElementById('svgBattery').innerHTML = SVG_ICONS.battery;
+      document.getElementById('svgGlass').innerHTML = SVG_ICONS.glass;
+
+      renderBinsGrid();
+      loadHistoryFromStorage();
+      activateSensorListeners();
+      initTouchControls();
+    });
+
+    function renderBinsGrid() {
+      const container = document.getElementById('binsContainer');
+      container.innerHTML = CATEGORIES.map(cat => `
+        <div class="bin-tile" onclick="openCategoryModal('${cat.id}')">
+          <div class="bin-box" style="background: ${cat.color};">
+            <div style="width: 14px; height: 2px; background: rgba(255,255,255,0.4); border-radius: 999px;"></div>
+            <div style="font-size: 8px; font-weight: 800;">REC</div>
+          </div>
+          <div class="bin-title">${cat.name}</div>
+        </div>
+      `).join('');
+    }
+
+    function loadHistoryFromStorage() {
+      try {
+        const saved = localStorage.getItem('lets_recycle_single_v2');
+        if (saved) historyList = JSON.parse(saved);
+      } catch (e) {}
+      updateHistoryBadge();
+    }
+
+    function saveHistoryToStorage() {
+      try {
+        localStorage.setItem('lets_recycle_single_v2', JSON.stringify(historyList));
+      } catch (e) {}
+      updateHistoryBadge();
+    }
+
+    function updateHistoryBadge() {
+      document.getElementById('historyCount').innerText = historyList.length;
+    }
+
+    function showView(viewId) {
+      document.getElementById('viewHome').style.display = viewId === 'home' ? 'block' : 'none';
+      document.getElementById('viewAnalyzing').style.display = viewId === 'analyzing' ? 'block' : 'none';
+      document.getElementById('viewMotion').style.display = viewId === 'motion' ? 'block' : 'none';
+      document.getElementById('viewResult').style.display = viewId === 'result' ? 'block' : 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goHome() {
+      stopMotionLoop();
+      showView('home');
+    }
+
+    /* ==========================================================================
+       SMARTPHONE SENSORS: Rock-Solid Permission & Live Tilt Response
+       ========================================================================== */
+    function toggleSensorInvert() {
+      sensorInverted = !sensorInverted;
+      const statusText = document.getElementById('sensorStatusText');
+      if (statusText) {
+        statusText.innerHTML = `⇄ 센서 방향이 <b>${sensorInverted ? '반전' : '표준'}</b> 모드로 설정되었습니다.`;
+      }
+    }
+
+    function activateSensorListeners() {
+      try {
+        window.addEventListener('devicemotion', handleMotion, true);
+        window.addEventListener('deviceorientation', handleOrientation, true);
+        window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+        window.ondevicemotion = handleMotion;
+        window.ondeviceorientation = handleOrientation;
+      } catch (e) {
+        console.warn('activateSensorListeners error:', e);
+      }
+      sensorActive = true;
+    }
+
+    async function requestPhoneSensors() {
+      const btn = document.getElementById('btnSensorStart');
+      const gaugeWrap = document.getElementById('sensorGaugeWrap');
+      const statusText = document.getElementById('sensorStatusText');
+
+      if (gaugeWrap) gaugeWrap.style.display = 'block';
+
+      activateSensorListeners();
+
+      // iOS Safari 13+ requires DeviceOrientationEvent.requestPermission() inside direct user gesture
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const resp = await DeviceOrientationEvent.requestPermission();
+          if (resp === 'granted') {
+            if (btn) {
+              btn.style.background = '#059669';
+              btn.innerHTML = '<span>🟢 센서 작동 중</span>';
+            }
+            if (statusText) {
+              statusText.innerHTML = '<span style="color: #059669; font-weight: 800;">✓ 센서 권한 허용 완료!</span> 폰을 좌우로 기울여보세요.';
+            }
+          } else {
+            if (statusText) statusText.innerText = '⚠️ 센서 접근이 거부되었습니다. 화면의 좌/우 버튼으로도 조종 가능합니다.';
+          }
+        } catch (err) {
+          console.warn('iOS orientation permission error:', err);
+          if (statusText) statusText.innerHTML = '💡 브라우저 센서 수신 대기 중... 폰을 좌우로 기울여보세요.';
+        }
+      } else {
+        // Android Chrome & standard mobile browsers
+        if (btn) {
+          btn.style.background = '#059669';
+          btn.innerHTML = '<span>🟢 센서 작동 중</span>';
+        }
+        if (statusText) {
+          statusText.innerHTML = '<span style="color: #059669; font-weight: 800;">✓ 센서 활성화 완료!</span> 폰을 좌우로 기울여보세요.';
+        }
+      }
+    }
+
+    function handleMotion(event) {
+      const acc = event.accelerationIncludingGravity || event.acceleration;
+      if (!acc) return;
+
+      const ax = acc.x;
+      const ay = acc.y;
+      const az = acc.z;
+
+      // 1. Direct hardware accelerometer lateral tilt (works 100% on Android and iOS in portrait)
+      if (typeof ax === 'number' && !isNaN(ax)) {
+        lastMotionTimestamp = Date.now();
+        hasReceivedSensorData = true;
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        // On Android: tilting right gives negative ax, tilting left gives positive ax
+        // On iOS: tilting right gives positive ax, tilting left gives negative ax
+        let lateral = isIOS ? ax : -ax;
+        if (sensorInverted) lateral = -lateral;
+
+        // Map m/s^2 (-6 to +6) to degrees (-40 to +40)
+        // At 30 degree tilt, sin(30)*9.8 = 4.9 m/s^2
+        const degrees = (lateral / 5.2) * 35;
+        updateTiltValue(degrees);
+      }
+
+      // 2. Shake detection
+      const deltaX = Math.abs((ax || 0) - lastAccel.x);
+      const deltaY = Math.abs((ay || 0) - lastAccel.y);
+      const speed = deltaX + deltaY;
+
+      if (speed > 16) {
+        const now = Date.now();
+        if (now - lastShakeTime > 1200) {
+          lastShakeTime = now;
+          onShakeDetected();
+        }
+      }
+      lastAccel = { x: ax || 0, y: ay || 0, z: az || 0 };
+    }
+
+    function handleOrientation(event) {
+      // If devicemotion is actively sending accelerometer data, skip Euler angles to avoid gimbal lock in portrait
+      if (Date.now() - lastMotionTimestamp < 300) return;
+
+      let gamma = event.gamma; // left/right tilt in degrees [-90, 90]
+      if (typeof gamma === 'number' && !isNaN(gamma)) {
+        hasReceivedSensorData = true;
+        if (sensorInverted) gamma = -gamma;
+        updateTiltValue(gamma);
+      }
+    }
+
+    function updateTiltValue(degrees) {
+      // Clamp between -40 and 40
+      const clamped = Math.max(-40, Math.min(40, degrees));
+      tiltX = clamped / 35; // -1 to +1
+
+      // 1. Update Live Bubble in Level Pipe (50% is center)
+      const bubble = document.getElementById('liveLevelBubble');
+      const display = document.getElementById('sensorAngleDisplay');
+      const tiltVal = document.getElementById('tiltAngleVal');
+      const statusText = document.getElementById('sensorStatusText');
+
+      const percent = 50 + (clamped / 40) * 40;
+      if (bubble) bubble.style.left = percent + '%';
+      if (display) display.innerHTML = `기울기: <b>${Math.round(clamped)}°</b> ${Math.abs(clamped) < 3 ? '(수평)' : clamped < 0 ? '(좌로 기울임)' : '(우로 기울임)'}`;
+      if (tiltVal) tiltVal.innerText = Math.round(clamped) + '°';
+      if (statusText && hasReceivedSensorData) {
+        statusText.innerHTML = `<span style="color: #059669; font-weight: 800;">✓ 센서 감지 중:</span> 폰 기울기 <b>${Math.round(clamped)}°</b> 감지!`;
+      }
+    }
+
+    function manualTilt(val) {
+      updateTiltValue(val);
+      const gaugeWrap = document.getElementById('sensorGaugeWrap');
+      if (gaugeWrap) gaugeWrap.style.display = 'block';
+    }
+
+    function onShakeDetected() {
+      const notice = document.getElementById('shakeNotice');
+      if (notice) {
+        notice.innerText = '✨ 털어내기 성공! 내용물이 깨끗이 비워졌어요!';
+        notice.style.color = '#059669';
+        setTimeout(() => {
+          notice.innerText = '💡 폰을 흔들면 "깨끗이 세척"!';
+          notice.style.color = '#6366F1';
+        }, 1800);
+      }
+      fireConfetti(25);
+    }
+
+    /* ==========================================================================
+       CAMERA SYSTEM: Guaranteed Auto-Play & Mobile Native Camera
+       ========================================================================== */
+    async function openCameraModal() {
+      document.getElementById('modalCamera').style.display = 'flex';
+      await startCameraStream(cameraFacing);
+    }
+
+    function closeCameraModal() {
+      stopCameraStream();
+      document.getElementById('modalCamera').style.display = 'none';
+    }
+
+    async function startCameraStream(facing) {
+      stopCameraStream();
+
+      const video = document.getElementById('cameraVideo');
+      const statusText = document.getElementById('cameraStatusText');
+
+      if (statusText) statusText.innerText = '카메라 연결 중... 잠시만 기다려주세요.';
+
+      // Critical video playback attributes for iOS and Android
+      video.muted = true;
+      video.setAttribute('autoplay', '');
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', 'true');
+      video.setAttribute('webkit-playsinline', 'true');
+
+      let stream = null;
+      const constraintsList = [
+        { video: { facingMode: { ideal: facing || 'environment' }, width: { ideal: 1280 } }, audio: false },
+        { video: { facingMode: facing || 'environment' }, audio: false },
+        { video: true, audio: false }
+      ];
+
+      for (const constraints of constraintsList) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          if (stream) break;
+        } catch (e) {
+          console.warn('getUserMedia constraint try failed:', constraints, e);
+        }
+      }
+
+      if (!stream) {
+        // Fallback directly to native phone camera app
+        alert('실시간 카메라 스트림을 시작할 수 없습니다.\n스마트폰 기본 카메라로 바로 촬영하도록 전환합니다.');
+        closeCameraModal();
+        document.getElementById('nativeCameraCapture').click();
+        return;
+      }
+
+      cameraStream = stream;
+      video.srcObject = stream;
+
+      // CRITICAL FOR MOBILE: Force play upon metadata or immediate
+      video.onloadedmetadata = async () => {
+        try {
+          await video.play();
+          if (statusText) statusText.innerText = '✓ 카메라 준비 완료! 아래 원형 버튼을 누르세요.';
+        } catch (playErr) {
+          console.warn('video.play() inside metadata error:', playErr);
+        }
+      };
+
+      try {
+        await video.play();
+        if (statusText) statusText.innerText = '✓ 카메라 준비 완료! 아래 원형 버튼을 누르세요.';
+      } catch (err) {
+        console.warn('Initial video.play() error:', err);
+      }
+    }
+
+    function stopCameraStream() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+    }
+
+    function toggleCameraFace() {
+      cameraFacing = cameraFacing === 'environment' ? 'user' : 'environment';
+      startCameraStream(cameraFacing);
+    }
+
+    function snapPhoto() {
+      const video = document.getElementById('cameraVideo');
+      const canvas = document.createElement('canvas');
+
+      const w = video.videoWidth || 640;
+      const h = video.videoHeight || 480;
+
+      canvas.width = w;
+      canvas.height = h;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+      setImage(dataUrl);
+      closeCameraModal();
+    }
+
+    /* ==========================================================================
+       FILE & SAMPLE LOGIC
+       ========================================================================== */
+    function handleFileSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function setImage(dataUrl) {
+      selectedImageBase64 = dataUrl;
+      document.getElementById('previewImg').src = dataUrl;
+      document.getElementById('uploadButtonsZone').style.display = 'none';
+      document.getElementById('previewZone').style.display = 'block';
+
+      const btn = document.getElementById('btnStartAnalyze');
+      btn.disabled = false;
+      btn.innerText = '분리배출 분석하기';
+    }
+
+    function resetSelectedImage() {
+      selectedImageBase64 = null;
+      document.getElementById('uploadButtonsZone').style.display = 'grid';
+      document.getElementById('previewZone').style.display = 'none';
+
+      const btn = document.getElementById('btnStartAnalyze');
+      btn.disabled = true;
+      btn.innerText = '사진을 먼저 선택해주세요';
+    }
+
+    function loadSample(key) {
+      const sample = SAMPLES[key];
+      if (!sample) return;
+
+      const svgCode = SVG_ICONS[key];
+      const encodedSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgCode);
+
+      setImage(encodedSvg);
+
+      currentResult = {
+        ...sample,
+        id: 'sample-' + Date.now(),
+        timestamp: Date.now(),
+        imageUrl: encodedSvg,
+        svgIconKey: key
+      };
+
+      saveHistoryItem(currentResult);
+      startMotionSimulator(currentResult);
+    }
+
+    function startAnalysis() {
+      if (!selectedImageBase64) return;
+
+      showView('analyzing');
+      document.getElementById('analyzingImg').src = selectedImageBase64;
+
+      setTimeout(() => {
+        currentResult = {
+          ...SAMPLES.pet,
+          id: 'res-' + Date.now(),
+          timestamp: Date.now(),
+          imageUrl: selectedImageBase64
+        };
+
+        saveHistoryItem(currentResult);
+        startMotionSimulator(currentResult);
+      }, 1500);
+    }
+
+    function saveHistoryItem(item) {
+      historyList.unshift(item);
+      if (historyList.length > 30) historyList.pop();
+      saveHistoryToStorage();
+    }
+
+    /* ==========================================================================
+       MOTION GAME LOOP
+       ========================================================================== */
+    function startMotionSimulator(res) {
+      showView('motion');
+
+      const iconWrap = document.getElementById('tiltObjectIcon');
+      const targetDock = document.getElementById('tiltBinsDock');
+
+      iconWrap.innerHTML = res.svgIconKey && SVG_ICONS[res.svgIconKey]
+        ? SVG_ICONS[res.svgIconKey]
+        : '<svg viewBox="0 0 24 24" fill="#059669"><circle cx="12" cy="12" r="10"/></svg>';
+
+      const targetCat = CATEGORIES.find(c => c.name.includes(res.category) || res.category.includes(c.name)) || CATEGORIES[0];
+      const generalCat = CATEGORIES.find(c => c.id === 'general');
+      const vinylCat = CATEGORIES.find(c => c.id === 'vinyl');
+
+      targetDock.innerHTML = `
+        <div class="tilt-dock-target" id="dockBinLeft">
+          <div style="font-size: 16px;">🗑️</div>
+          <div style="font-size: 10px; font-weight: 800; color: #475569;">일반쓰레기</div>
+        </div>
+
+        <div class="tilt-dock-target" id="dockBinCenter">
+          <div style="font-size: 18px;">${targetCat.id === 'can' ? '🥫' : targetCat.id === 'glass' ? '🍾' : targetCat.id === 'paper' ? '📦' : targetCat.id === 'battery' ? '🔋' : '🧴'}</div>
+          <div style="font-size: 10px; font-weight: 800; color: #059669;">${targetCat.name} (정답)</div>
+        </div>
+
+        <div class="tilt-dock-target" id="dockBinRight">
+          <div style="font-size: 16px;">🛍️</div>
+          <div style="font-size: 10px; font-weight: 800; color: #D97706;">비닐류</div>
+        </div>
+      `;
+
+      objX = 50;
+      runMotionLoop();
+    }
+
+    function runMotionLoop() {
+      stopMotionLoop();
+
+      function step() {
+        // Direct physical target position based on tiltX (-1 to +1)
+        // 50% is center dock, ~16% is left dock, ~84% is right dock
+        const targetX = 50 + (tiltX * 36);
+
+        // Responsive spring follower: smoothly reaches target in ~120ms
+        objX += (targetX - objX) * 0.22;
+
+        if (objX < 12) objX = 12;
+        if (objX > 88) objX = 88;
+
+        const obj = document.getElementById('tiltObject');
+        if (obj) obj.style.left = objX + '%';
+
+        const leftDock = document.getElementById('dockBinLeft');
+        const centerDock = document.getElementById('dockBinCenter');
+        const rightDock = document.getElementById('dockBinRight');
+
+        if (leftDock && centerDock && rightDock) {
+          leftDock.classList.toggle('highlight', objX < 33);
+          centerDock.classList.toggle('highlight', objX >= 33 && objX <= 67);
+          rightDock.classList.toggle('highlight', objX > 67);
+        }
+
+        animFrameId = requestAnimationFrame(step);
+      }
+      step();
+    }
+
+    function initTouchControls() {
+      const field = document.getElementById('tiltField');
+      if (!field) return;
+
+      function handleTouchCoord(clientX) {
+        const rect = field.getBoundingClientRect();
+        if (rect.width <= 0) return;
+        const relativeX = (clientX - rect.left) / rect.width;
+        // relativeX ranges 0 to 1 -> map to -35 to +35 degrees
+        const virtualTilt = (relativeX - 0.5) * 2 * 35;
+        updateTiltValue(virtualTilt);
+      }
+
+      field.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches[0]) {
+          handleTouchCoord(e.touches[0].clientX);
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      field.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches[0]) {
+          handleTouchCoord(e.touches[0].clientX);
+        }
+      }, { passive: true });
+
+      field.addEventListener('mousemove', (e) => {
+        if (e.buttons === 1) {
+          handleTouchCoord(e.clientX);
+        }
+      });
+    }
+
+    function stopMotionLoop() {
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+    }
+
+    function restartMotionMode() {
+      if (currentResult) startMotionSimulator(currentResult);
+    }
+
+    function skipToResult() {
+      stopMotionLoop();
+      showResultView();
+    }
+
+    /* ==========================================================================
+       DETAILED RESULT VIEW
+       ========================================================================== */
+    function showResultView() {
+      if (!currentResult) return;
+      showView('result');
+
+      const res = currentResult;
+      const banner = document.getElementById('resultBanner');
+      banner.className = 'result-banner ' + (res.statusColor === 'green' ? 'banner-green' : res.statusColor === 'orange' ? 'banner-orange' : 'banner-red');
+
+      document.getElementById('resultStatusIcon').innerText = res.statusColor === 'green' ? '🟢' : res.statusColor === 'orange' ? '🟠' : '🔴';
+      document.getElementById('resultStatusLabel').innerText = res.statusLabel;
+      document.getElementById('resultCategoryText').innerText = res.category + ' 배출 품목';
+      document.getElementById('resultConfidenceText').innerText = `신뢰도 ${res.confidence}% · 대한민국 환경부 기준 분석`;
+
+      document.getElementById('resultPhotoThumb').src = res.imageUrl;
+      document.getElementById('resultItemName').innerText = res.name;
+      document.getElementById('resultItemMaterial').innerText = res.material;
+      document.getElementById('resultReasonText').innerText = res.reason;
+      document.getElementById('resultPrecautionsText').innerText = res.precautions;
+
+      const compWrap = document.getElementById('resultComponentsList');
+      if (res.components && res.components.length > 0) {
+        document.getElementById('resultComponentsSection').style.display = 'block';
+        compWrap.innerHTML = res.components.map(c => `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 12px;">
+            <div><strong>${c.part}</strong> <span style="color: #64748B;">(${c.material || ''})</span></div>
+            <div style="font-weight: 800; color: #059669;">👉 ${c.bin}</div>
+          </div>
+        `).join('');
+      } else {
+        document.getElementById('resultComponentsSection').style.display = 'none';
+      }
+
+      const stepsWrap = document.getElementById('resultStepsList');
+      stepsWrap.innerHTML = (res.steps || []).map((step, idx) => `
+        <div style="display: flex; gap: 8px; font-size: 13px; background: #F8FAFC; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);">
+          <span style="font-weight: 900; color: #10B981;">${idx + 1}.</span>
+          <span>${step}</span>
+        </div>
+      `).join('');
+
+      fireConfetti(45);
+    }
+
+    function copyResultText() {
+      if (!currentResult) return;
+      const res = currentResult;
+      const text = `[분리수거를 하자 AI 분석 결과]\n품목: ${res.name}\n재질: ${res.material}\n판정: ${res.statusLabel}\n배출함: ${res.category}\n\n[올바른 실천 4단계]\n${(res.steps || []).join('\n')}\n\n[주의사항]\n${res.precautions}`;
+      navigator.clipboard.writeText(text);
+      alert('분석 결과가 복사되었습니다! 🌿');
+    }
+
+    /* ==========================================================================
+       MODALS: Category & History
+       ========================================================================== */
+    function openCategoryModal(catId) {
+      const cat = CATEGORIES.find(c => c.id === catId);
+      if (!cat) return;
+
+      document.getElementById('catModalTitle').innerText = cat.name + ' 분리배출 가이드';
+      const body = document.getElementById('catModalBody');
+      body.innerHTML = `
+        <div style="background: #F1F5F9; padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; font-weight: 600; color: #334155;">
+          ${cat.desc}
+        </div>
+        <h5 style="font-size: 13px; font-weight: 800; color: #0F172A; margin-bottom: 8px;">✅ 올바른 배출 4원칙</h5>
+        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
+          ${cat.rules.map((r, i) => `
+            <div style="display: flex; gap: 8px; font-size: 12px; background: #F8FAFC; padding: 8px 10px; border-radius: 8px;">
+              <span style="font-weight: 900; color: #10B981;">${i+1}.</span>
+              <span>${r}</span>
+            </div>
+          `).join('')}
+        </div>
+        <h5 style="font-size: 13px; font-weight: 800; color: #0F172A; margin-bottom: 8px;">💡 주의사항 및 팁</h5>
+        <div style="background: #FEF3C7; color: #92400E; padding: 10px 12px; border-radius: 10px; font-size: 12px;">
+          ${cat.tips.map(t => `<p>• ${t}</p>`).join('')}
+        </div>
+      `;
+
+      document.getElementById('modalCategory').style.display = 'flex';
+    }
+
+    function closeModalCategory() {
+      document.getElementById('modalCategory').style.display = 'none';
+    }
+
+    function openHistoryModal() {
+      const container = document.getElementById('historyListContainer');
+      if (historyList.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 32px 12px; color: #94A3B8;">
+            <div style="font-size: 28px; margin-bottom: 6px;">🌱</div>
+            <div style="font-weight: 800; color: #475569;">아직 분석한 물건이 없어요!</div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = historyList.map((item, idx) => `
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; cursor: pointer; background: white;" onclick="selectHistoryItem(${idx})">
+            <img src="${item.imageUrl}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: contain; background: #F8FAFC; border: 1px solid var(--border);" alt="Thumb">
+            <div style="flex: 1; min-width: 0;">
+              <span class="sample-pill ${item.statusColor === 'green' ? 'pill-green' : item.statusColor === 'orange' ? 'pill-orange' : 'pill-red'}">${item.statusLabel}</span>
+              <div style="font-size: 13px; font-weight: 800; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">${item.name}</div>
+            </div>
+            <button style="background: none; border: none; color: #94A3B8; font-size: 16px; cursor: pointer; padding: 4px;" onclick="event.stopPropagation(); deleteHistoryItem(${idx})">✕</button>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('modalHistory').style.display = 'flex';
+    }
+
+    function closeModalHistory() {
+      document.getElementById('modalHistory').style.display = 'none';
+    }
+
+    function selectHistoryItem(idx) {
+      currentResult = historyList[idx];
+      closeModalHistory();
+      showResultView();
+    }
+
+    function deleteHistoryItem(idx) {
+      historyList.splice(idx, 1);
+      saveHistoryToStorage();
+      openHistoryModal();
+    }
+
+    function clearAllHistory() {
+      if (confirm('모든 기록을 삭제하시겠습니까?')) {
+        historyList = [];
+        saveHistoryToStorage();
+        openHistoryModal();
+      }
+    }
+
+    /* ==========================================================================
+       CONFETTI CANVAS ENGINE (Pure Vanilla JS, 0 External Libraries)
+       ========================================================================== */
+    function fireConfetti(count = 50) {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#10B981', '#34D399', '#FBBF24', '#60A5FA', '#F472B6', '#818CF8'];
+
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * 160,
+          y: canvas.height * 0.45,
+          vx: (Math.random() - 0.5) * 10,
+          vy: -Math.random() * 11 - 4,
+          size: Math.random() * 7 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 8,
+          life: 1
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = false;
+
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.4;
+          p.rotation += p.rotSpeed;
+          p.life -= 0.015;
+
+          if (p.life > 0) {
+            alive = true;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, p.life);
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+          }
+        });
+
+        if (alive) {
+          requestAnimationFrame(animate);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      animate();
+    }
+  </script>
+</body>
+</html>
