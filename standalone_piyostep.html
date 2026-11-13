@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PiyoStep - 스마트 만보기 & 활동 습관 도우미</title>
+  <style>
+    :root {
+      --bg: #FDFBF7;
+      --card-bg: #FFFFFF;
+      --card-border: #F1ECE1;
+      --text-main: #2D3748;
+      --text-muted: #718096;
+      --primary: #F59E0B;
+      --primary-light: #FEF3C7;
+      --accent-mint: #10B981;
+      --accent-mint-light: #D1FAE5;
+      --accent-coral: #F43F5E;
+      --accent-coral-light: #FFE4E6;
+      --accent-indigo: #6366F1;
+      --accent-indigo-light: #E0E7FF;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --shadow: 0 4px 20px -2px rgba(220, 190, 140, 0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 16px; }
+    .app-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 40px; }
+    
+    /* Top Bar */
+    .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--card-bg); border-radius: var(--radius-md); border: 1px solid var(--card-border); box-shadow: var(--shadow); }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.1rem; color: #B45309; }
+    .brand-chick { font-size: 1.4rem; }
+    .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; background: #F3F4F6; color: #4B5563; font-weight: 600; }
+    .status-badge.active { background: var(--accent-mint-light); color: #065F46; }
+    .status-badge.sim { background: var(--primary-light); color: #92400E; }
+
+    /* Card */
+    .card { background: var(--card-bg); border-radius: var(--radius-lg); border: 1px solid var(--card-border); padding: 20px; box-shadow: var(--shadow); position: relative; }
+    
+    /* Chick Stage */
+    .chick-stage { display: flex; flex-direction: column; align-items: center; text-align: center; margin: 8px 0; }
+    .chick-bubble { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; font-size: 0.85rem; padding: 8px 14px; border-radius: 16px; margin-bottom: 12px; font-weight: 500; max-width: 85%; position: relative; }
+    .chick-bubble::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border-width: 6px 6px 0; border-style: solid; border-color: #FFFBEB transparent; display: block; width: 0; }
+    .chick-avatar { width: 120px; height: 120px; margin: 0 auto; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .waddle { animation: chickWaddle 0.7s infinite alternate ease-in-out; }
+    .stretching { animation: chickStretch 1.5s infinite ease-in-out; }
+    @keyframes chickWaddle { 0% { transform: translateY(0) rotate(-4deg); } 100% { transform: translateY(-8px) rotate(4deg); } }
+    @keyframes chickStretch { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1) translateY(-6px); } }
+
+    /* Ring & Step */
+    .ring-container { position: relative; width: 220px; height: 220px; margin: 10px auto; display: flex; align-items: center; justify-content: center; }
+    .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .ring-bg { fill: none; stroke: #F1ECE1; stroke-width: 14; }
+    .ring-progress { fill: none; stroke: #F59E0B; stroke-width: 14; stroke-linecap: round; stroke-dasharray: 565; stroke-dashoffset: 565; transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    .ring-inner { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .step-number { font-size: 2.5rem; font-weight: 800; color: #1F2937; line-height: 1.1; letter-spacing: -0.03em; }
+    .step-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+    .step-percent { font-size: 0.85rem; color: #D97706; font-weight: 700; margin-top: 4px; }
+
+    /* Stats Grid */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+    .stat-box { background: #FAFAF8; border-radius: var(--radius-md); padding: 12px 8px; text-align: center; border: 1px solid #F3EFE6; }
+    .stat-val { font-size: 1.1rem; font-weight: 700; color: #1F2937; }
+    .stat-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Controls */
+    .btn-main { width: 100%; height: 52px; border-radius: 999px; background: #F59E0B; color: #FFFFFF; border: none; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35); transition: transform 0.15s, background-color 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-main:active { transform: scale(0.97); }
+    .btn-main.paused { background: #10B981; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); }
+    .btn-sub { width: 100%; height: 42px; border-radius: var(--radius-md); background: #F3F4F6; color: #374151; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    .btn-sub:hover { background: #E5E7EB; }
+
+    /* Sedentary Card */
+    .alert-card { border-left: 4px solid var(--accent-coral); background: #FFF8F8; }
+    .timer-bar-wrap { height: 8px; background: #FEE2E2; border-radius: 999px; overflow: hidden; margin: 10px 0 6px 0; }
+    .timer-bar { height: 100%; background: #EF4444; width: 0%; transition: width 0.3s; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal-box { background: white; border-radius: 28px; width: 100%; max-width: 400px; padding: 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    .stretch-steps { text-align: left; background: #F0FDF4; border-radius: 16px; padding: 14px; margin: 14px 0; font-size: 0.85rem; color: #166534; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="brand">
+        <span class="brand-chick">🐥</span>
+        <span>PiyoStep</span>
+      </div>
+      <div id="sensorStateBadge" class="status-badge">센서 대기</div>
+    </header>
+
+    <!-- Main Step Card -->
+    <main class="card">
+      <div class="chick-stage">
+        <div id="chickSpeech" class="chick-bubble">오늘도 삐약이와 함께 건강하게 걸어봐요! 🐥</div>
+        <div id="chickIcon" class="chick-avatar">
+          <svg viewBox="0 0 100 100" width="100%" height="100%">
+            <circle cx="50" cy="54" r="34" fill="#FDE047" stroke="#EAB308" stroke-width="2.5" />
+            <ellipse cx="26" cy="56" rx="9" ry="15" fill="#FACC15" transform="rotate(-15 26 56)" />
+            <ellipse cx="74" cy="56" rx="9" ry="15" fill="#FACC15" transform="rotate(15 74 56)" />
+            <circle cx="41" cy="48" r="4.5" fill="#1F2937" />
+            <circle cx="59" cy="48" r="4.5" fill="#1F2937" />
+            <circle cx="43" cy="46" r="1.5" fill="#FFFFFF" />
+            <circle cx="61" cy="46" r="1.5" fill="#FFFFFF" />
+            <polygon points="50,52 44,58 56,58" fill="#F97316" />
+            <ellipse cx="34" cy="55" rx="5" ry="3" fill="#FCA5A5" opacity="0.7" />
+            <ellipse cx="66" cy="55" rx="5" ry="3" fill="#FCA5A5" opacity="0.7" />
+            <rect x="36" y="86" width="11" height="6" rx="3" fill="#EF4444" />
+            <rect x="53" y="86" width="11" height="6" rx="3" fill="#EF4444" />
+            <path d="M48 20 C 49 14, 52 14, 52 20" stroke="#EAB308" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="ring-container">
+        <svg class="ring-svg" viewBox="0 0 200 200">
+          <circle class="ring-bg" cx="100" cy="100" r="90"></circle>
+          <circle id="progressCircle" class="ring-progress" cx="100" cy="100" r="90"></circle>
+        </svg>
+        <div class="ring-inner">
+          <div id="stepDisplay" class="step-number">0</div>
+          <div class="step-label">걸음 / 목표 <span id="goalText">8,000</span></div>
+          <div id="percentDisplay" class="step-percent">0% 달성</div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div id="calDisplay" class="stat-val">0</div>
+          <div class="stat-lbl">칼로리 (kcal)</div>
+        </div>
+        <div class="stat-box">
+          <div id="distDisplay" class="stat-val">0.0</div>
+          <div class="stat-lbl">거리 (km)</div>
+        </div>
+        <div class="stat-box">
+          <div id="activeDisplay" class="stat-val">0m</div>
+          <div class="stat-lbl">활동 시간</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px;">
+        <button id="toggleBtn" class="btn-main" onclick="toggleTracking()">
+          <span id="btnIcon">▶</span> <span id="btnText">걸음 수 측정 시작</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- Sedentary Alert Card -->
+    <section class="card alert-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="color:#991B1B; font-size:0.95rem;">⏳ 미활동 감지 & 스트레칭 알림</strong>
+        <span id="inactivityTimer" style="font-size:0.8rem; font-weight:700; color:#DC2626;">00분 00초 정지 중</span>
+      </div>
+      <p style="font-size:0.75rem; color:#7F1D1D; margin-top:4px;">1시간 동안 움직임이 감지되지 않으면 삐약이가 스트레칭 알림을 보내요!</p>
+      <div class="timer-bar-wrap">
+        <div id="inactivityBar" class="timer-bar"></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn-sub" onclick="openStretchModal()" style="margin-top:0;">스트레칭 바로 보기</button>
+        <button class="btn-sub" onclick="triggerTestStretch()" style="margin-top:0; background:#FEE2E2; color:#991B1B;">1분 테스트</button>
+      </div>
+    </section>
+
+    <!-- Goal & Settings -->
+    <section class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:0.95rem;">🎯 하루 걸음 수 목표 설정</strong>
+        <span id="goalValueSpan" style="font-weight:700; color:#D97706;">8,000 보</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:10px;">
+        <button class="btn-sub" onclick="setGoal(4000)">4,000</button>
+        <button class="btn-sub" onclick="setGoal(6000)">6,000</button>
+        <button class="btn-sub" onclick="setGoal(8000)">8,000</button>
+        <button class="btn-sub" onclick="setGoal(10000)">10,000</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Stretch Modal -->
+  <div id="stretchModal" class="modal-overlay">
+    <div class="modal-box">
+      <div style="font-size:3rem;">🐥✨</div>
+      <h3 style="color:#1F2937; margin:10px 0 6px 0;">오래 앉아있었어요! 스트레칭 타임!</h3>
+      <p style="font-size:0.85rem; color:#4B5563;">몸을 쭉 펴고 혈액순환을 도와 건강을 지켜봐요.</p>
+      
+      <div class="stretch-steps">
+        <strong>🐥 3단계 힐링 스트레칭</strong><br>
+        1. 양손 깍지 끼고 하늘로 쭉 기지개 켜기 (10초)<br>
+        2. 목을 좌우로 천천히 3바퀴씩 돌려주기 (10초)<br>
+        3. 어깨 으쓱 5회 & 가볍게 제자리 걸음 (10초)
+      </div>
+
+      <button class="btn-main" onclick="closeStretchModal()">스트레칭 완료! 상쾌해요 🌿</button>
+    </div>
+  </div>
+
+  <script>
+    // Audio Synth
+    let audioCtx = null;
+    function playChime(freq = 600, dur = 0.15) {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch(e) {}
+    }
+
+    // App State
+    let steps = 0;
+    let goal = 8000;
+    let isTracking = false;
+    let isSimulated = false;
+    let simInterval = null;
+    let lastMovementTime = Date.now();
+    let inactivityThreshold = 3600; // 1 hour (3600 sec)
+    let lastStepTime = 0;
+    let lastMag = 9.8;
+    let activeSeconds = 0;
+    let activeTimer = null;
+
+    // Load saved
+    try {
+      const savedSteps = localStorage.getItem('piyo_steps');
+      const savedGoal = localStorage.getItem('piyo_goal');
+      if (savedSteps) steps = parseInt(savedSteps, 10) || 0;
+      if (savedGoal) goal = parseInt(savedGoal, 10) || 8000;
+    } catch(e) {}
+
+    function updateUI() {
+      document.getElementById('stepDisplay').innerText = steps.toLocaleString();
+      document.getElementById('goalText').innerText = goal.toLocaleString();
+      document.getElementById('goalValueSpan').innerText = goal.toLocaleString() + ' 보';
+      
+      const pct = Math.min(100, Math.round((steps / goal) * 100));
+      document.getElementById('percentDisplay').innerText = pct + '% 달성';
+      
+      const circle = document.getElementById('progressCircle');
+      const circum = 2 * Math.PI * 90; // ~565
+      const offset = circum - (pct / 100) * circum;
+      circle.style.strokeDashoffset = offset;
+
+      document.getElementById('calDisplay').innerText = (steps * 0.04).toFixed(0);
+      document.getElementById('distDisplay').innerText = (steps * 0.00075).toFixed(2);
+      document.getElementById('activeDisplay').innerText = Math.floor(activeSeconds / 60) + 'm';
+
+      const chick = document.getElementById('chickIcon');
+      const speech = document.getElementById('chickSpeech');
+      if (isTracking) {
+        chick.classList.add('waddle');
+        if (pct >= 100) {
+          speech.innerText = '와아! 오늘 목표 달성 완료! 최고예요! ⭐';
+        } else {
+          speech.innerText = '한 걸음씩 삐약삐약 신나게 걸어봐요~ 👟';
+        }
+      } else {
+        chick.classList.remove('waddle');
+        speech.innerText = '준비되시면 시작 버튼을 눌러주세요! 🐥';
+      }
+    }
+
+    function toggleTracking() {
+      if (!isTracking) {
+        startTracking();
+      } else {
+        stopTracking();
+      }
+    }
+
+    async function startTracking() {
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+          const perm = await DeviceMotionEvent.requestPermission();
+          if (perm !== 'granted') {
+            alert('스마트폰 모션 센서 권한이 거부되었습니다.');
+            return;
+          }
+        } catch(e) {
+          console.warn(e);
+        }
+      }
+
+      isTracking = true;
+      lastMovementTime = Date.now();
+      document.getElementById('sensorStateBadge').innerText = isSimulated ? '시뮬레이션 중' : '센서 측정 중';
+      document.getElementById('sensorStateBadge').className = 'status-badge ' + (isSimulated ? 'sim' : 'active');
+      document.getElementById('btnText').innerText = '측정 일시 정지';
+      document.getElementById('btnIcon').innerText = '⏸';
+      document.getElementById('toggleBtn').classList.add('paused');
+
+      window.addEventListener('devicemotion', handleMotion);
+
+      if (!activeTimer) {
+        activeTimer = setInterval(() => {
+          if (isTracking) {
+            activeSeconds++;
+            checkInactivity();
+            updateUI();
+          }
+        }, 1000);
+      }
+      playChime(523, 0.15);
+      updateUI();
+    }
+
+    function stopTracking() {
+      isTracking = false;
+      window.removeEventListener('devicemotion', handleMotion);
+      document.getElementById('sensorStateBadge').innerText = '측정 일시 정지';
+      document.getElementById('sensorStateBadge').className = 'status-badge';
+      document.getElementById('btnText').innerText = '걸음 수 측정 시작';
+      document.getElementById('btnIcon').innerText = '▶';
+      document.getElementById('toggleBtn').classList.remove('paused');
+      playChime(392, 0.1);
+      updateUI();
+    }
+
+    function handleMotion(e) {
+      if (!isTracking || isSimulated) return;
+      const acc = e.accelerationIncludingGravity || e.acceleration;
+      if (!acc) return;
+      const x = acc.x || 0, y = acc.y || 0, z = acc.z || 0;
+      const mag = Math.sqrt(x*x + y*y + z*z);
+      const diff = Math.abs(mag - lastMag);
+
+      // Movement detected
+      if (diff > 0.4) {
+        lastMovementTime = Date.now();
+      }
+
+      // Step peak detection
+      const now = Date.now();
+      if (mag > 12.0 && lastMag <= 12.0 && (now - lastStepTime > 300)) {
+        steps++;
+        lastStepTime = now;
+        lastMovementTime = now;
+        playChime(784, 0.08);
+        try { localStorage.setItem('piyo_steps', steps); } catch(e) {}
+        updateUI();
+      }
+      lastMag = mag;
+    }
+
+    function checkInactivity() {
+      const now = Date.now();
+      const idleSec = Math.floor((now - lastMovementTime) / 1000);
+      const min = Math.floor(idleSec / 60);
+      const sec = idleSec % 60;
+      document.getElementById('inactivityTimer').innerText = 
+        String(min).padStart(2, '0') + '분 ' + String(sec).padStart(2, '0') + '초 정지 중';
+
+      const pct = Math.min(100, (idleSec / inactivityThreshold) * 100);
+      document.getElementById('inactivityBar').style.width = pct + '%';
+
+      if (idleSec >= inactivityThreshold) {
+        lastMovementTime = Date.now(); // reset
+        openStretchModal();
+      }
+    }
+
+    function setGoal(val) {
+      if (val < 4000) val = 4000;
+      goal = val;
+      try { localStorage.setItem('piyo_goal', goal); } catch(e) {}
+      playChime(659, 0.1);
+      updateUI();
+    }
+
+    function toggleSimMode() {
+      isSimulated = !isSimulated;
+      const btn = document.getElementById('simToggleBtn');
+      if (isSimulated) {
+        btn.innerText = '시뮬레이션 끄기';
+        btn.style.background = '#FDE68A';
+        btn.style.color = '#92400E';
+        if (isTracking) {
+          document.getElementById('sensorStateBadge').innerText = '시뮬레이션 중';
+          document.getElementById('sensorStateBadge').className = 'status-badge sim';
+        }
+        if (!simInterval) {
+          simInterval = setInterval(() => {
+            if (isTracking && isSimulated) {
+              steps++;
+              lastMovementTime = Date.now();
+              playChime(600, 0.05);
+              updateUI();
+            }
+          }, 1200);
+        }
+      } else {
+        btn.innerText = '시뮬레이션 켜기';
+        btn.style.background = '#F3F4F6';
+        btn.style.color = '#374151';
+        clearInterval(simInterval);
+        simInterval = null;
+        if (isTracking) {
+          document.getElementById('sensorStateBadge').innerText = '센서 측정 중';
+          document.getElementById('sensorStateBadge').className = 'status-badge active';
+        }
+      }
+    }
+
+    function openStretchModal() {
+      document.getElementById('stretchModal').style.display = 'flex';
+      playChime(880, 0.2);
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    }
+
+    function closeStretchModal() {
+      document.getElementById('stretchModal').style.display = 'none';
+      lastMovementTime = Date.now();
+    }
+
+    function triggerTestStretch() {
+      openStretchModal();
+    }
+
+    // Init
+    updateUI();
+  </script>
+</body>
+</html>
