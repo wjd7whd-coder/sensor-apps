@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>스마트 쓰레기통 에코봇 - 단일 무설치 버전</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif; }
+    .font-jua { font-family: 'Jua', sans-serif; }
+    @keyframes soft-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes wiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
+    @keyframes sweat-drip { 0% { transform: translateY(0); opacity: 0.8; } 100% { transform: translateY(12px); opacity: 0; } }
+    .animate-soft-bounce { animation: soft-bounce 2.6s ease-in-out infinite; }
+    .animate-wiggle-fast { animation: wiggle 0.4s ease-in-out infinite; }
+    .animate-sweat { animation: sweat-drip 1.2s ease-in infinite; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-pink-50 via-sky-50 to-emerald-50 min-h-screen text-slate-800 antialiased p-3 sm:p-6">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Web Audio Synthesizer
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx && window.AudioContext) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playPop() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const now = this.ctx.currentTime;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.12);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.13);
+      }
+      playFanfare() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        const now = this.ctx.currentTime;
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const t = now + idx * 0.08;
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.25, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.36);
+        });
+      }
+      playAlarm() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        [784, 659, 784, 880].forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const t = now + i * 0.11;
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.25, t);
+          gain.gain.exponentialRampToValueAtTime(0.01, t + 0.16);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.17);
+        });
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    function App() {
+      const [percentage, setPercentage] = useState(25);
+      const [isSimulating, setIsSimulating] = useState(false);
+      const [soundOn, setSoundOn] = useState(true);
+      const [dialogueIndex, setDialogueIndex] = useState(0);
+      const totalHeight = 50; // cm
+      const minDistance = 5; // cm
+
+      const distance = Math.max(minDistance, totalHeight - (percentage / 100) * (totalHeight - minDistance));
+      const level = percentage >= 90 ? 'full' : percentage >= 71 ? 'warning' : 'comfortable';
+
+      const dialogues = {
+        comfortable: [
+          "뱃속이 텅텅 비어서 가뿐해요! 언제든 버려주세요~ 🌿",
+          "아직 공간이 넉넉해요. 깨끗하게 써주셔서 고마워요! ✨",
+          "배고파요~ 분리수거해서 쏙 넣어주시면 더 좋아요!"
+        ],
+        warning: [
+          "어라라? 슬슬 배가 빵빵해지고 있어요... 조심조심! 😅",
+          "벌써 꽤 많이 찼어요! 미리 종량제 봉투를 준비할까요? 📦",
+          "끙차~ 아직은 버틸 수 있지만 조심해주세요!"
+        ],
+        full: [
+          "으악! 배가 터질 것 같아요! 🚨 어서 저를 비워주세요!",
+          "더 이상 아무것도 못 먹겠어요! 뚜껑이 안 닫혀요 ㅠㅠ",
+          "삐용삐용! 쓰레기통 비우기 긴급 미션이 시작되었습니다! 💨"
+        ]
+      };
+
+      const currentLines = dialogues[level];
+      const activeLine = currentLines[dialogueIndex % currentLines.length];
+
+      // Auto simulation
+      useEffect(() => {
+        if (!isSimulating) return;
+        const interval = setInterval(() => {
+          setPercentage(prev => {
+            if (prev >= 100) return 100;
+            const next = Math.min(100, prev + 5);
+            if (next >= 90 && prev < 90) sound.playAlarm();
+            else sound.playPop();
+            return next;
+          });
+        }, 3000);
+        return () => clearInterval(interval);
+      }, [isSimulating]);
+
+      // Sound toggle sync
+      useEffect(() => {
+        sound.enabled = soundOn;
+      }, [soundOn]);
+
+      const handleEmpty = () => {
+        setPercentage(0);
+        setDialogueIndex(prev => prev + 1);
+        sound.playFanfare();
+        if (window.confetti) {
+          window.confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        }
+      };
+
+      const handleAdd = (amt) => {
+        setPercentage(prev => {
+          const next = Math.min(100, prev + amt);
+          if (next >= 90 && prev < 90) sound.playAlarm();
+          else sound.playPop();
+          return next;
+        });
+        setDialogueIndex(prev => prev + 1);
+      };
+
+      const theme = {
+        comfortable: { fill: '#E0F2FE', stroke: '#7DD3FC', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-800' },
+        warning: { fill: '#FEF3C7', stroke: '#FCD34D', text: 'text-amber-800', badge: 'bg-amber-100 text-amber-900' },
+        full: { fill: '#FFE4E6', stroke: '#FDA4AF', text: 'text-rose-700', badge: 'bg-rose-100 text-rose-900 animate-pulse' }
+      }[level];
+
+      return (
+        <div className="max-w-xl mx-auto space-y-4">
+          {/* Header */}
+          <div className="bg-white/80 backdrop-blur-md rounded-3xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <h1 className="font-jua text-xl text-slate-800 flex items-center gap-2">
+                <span>스마트 쓰레기통 에코봇</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 font-sans font-bold">통통이</span>
+              </h1>
+              <p className="text-xs text-slate-500">초음파 센서 수위 감지 & 무설치 독립형 웹 앱</p>
+            </div>
+            <button
+              onClick={() => setSoundOn(!soundOn)}
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-bold"
+            >
+              {soundOn ? '🔊 소리켬' : '🔇 음소거'}
+            </button>
+          </div>
+
+          {/* Speech Bubble */}
+          <div
+            onClick={() => setDialogueIndex(prev => prev + 1)}
+            className="p-4 rounded-3xl bg-white/95 border-2 border-slate-200/80 shadow-sm cursor-pointer hover:shadow-md transition-all text-center"
+          >
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+              <span className={"font-bold px-2 py-0.5 rounded-full " + theme.badge}>
+                {level === 'comfortable' ? '여유' : level === 'warning' ? '주의' : '가득 참!'}
+              </span>
+              <span>말풍선 터치 시 다른 대사</span>
+            </div>
+            <p className="font-jua text-lg text-slate-800">"{activeLine}"</p>
+          </div>
+
+          {/* Character Card */}
+          <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-slate-200/80 text-center flex flex-col items-center">
+            {/* SVG Trash Can */}
+            <div
+              onClick={() => handleAdd(4)}
+              className={"cursor-pointer transition-transform " + (level === 'full' ? 'animate-wiggle-fast' : 'animate-soft-bounce')}
+            >
+              <svg viewBox="0 0 240 260" className="w-56 h-64">
+                <ellipse cx="120" cy="245" rx="65" ry="10" fill="#E2E8F0" />
+                {/* Body */}
+                <path d="M 50 65 L 190 65 L 178 225 C 176 240 163 248 146 248 L 94 248 C 77 248 64 240 62 225 Z" fill={theme.fill} stroke={theme.stroke} strokeWidth="6" />
+                
+                {/* Trash Level Inside */}
+                <rect
+                  x="64"
+                  y={245 - (percentage / 100) * 165}
+                  width="112"
+                  height={(percentage / 100) * 165}
+                  fill={level === 'full' ? '#F43F5E' : level === 'warning' ? '#F59E0B' : '#10B981'}
+                  opacity="0.6"
+                  rx="4"
+                />
+
+                {/* Face Eyes */}
+                {level === 'comfortable' && (
+                  <g>
+                    <path d="M 85 120 C 89 110 101 110 105 120" fill="none" stroke="#1E293B" strokeWidth="4" strokeLinecap="round" />
+                    <path d="M 135 120 C 139 110 151 110 155 120" fill="none" stroke="#1E293B" strokeWidth="4" strokeLinecap="round" />
+                    <path d="M 110 135 Q 120 148 130 135" fill="#E11D48" stroke="#1E293B" strokeWidth="3" />
+                  </g>
+                )}
+                {level === 'warning' && (
+                  <g>
+                    <circle cx="95" cy="118" r="8" fill="#1E293B" />
+                    <circle cx="145" cy="118" r="8" fill="#1E293B" />
+                    <circle cx="97" cy="115" r="3" fill="#FFF" />
+                    <circle cx="147" cy="115" r="3" fill="#FFF" />
+                    <ellipse cx="120" cy="138" rx="6" ry="8" fill="#BE123C" stroke="#1E293B" strokeWidth="2.5" />
+                    <path d="M 170 95 C 170 95 175 102 175 106 C 175 109 172 111 170 111 C 168 111 165 109 165 106 Z" fill="#38BDF8" className="animate-sweat" />
+                  </g>
+                )}
+                {level === 'full' && (
+                  <g>
+                    {/* Pitiful crying eyebrows */}
+                    <path d="M 78 106 Q 88 114 98 111" fill="none" stroke="#881337" strokeWidth="3.5" strokeLinecap="round" />
+                    <path d="M 162 106 Q 152 114 142 111" fill="none" stroke="#881337" strokeWidth="3.5" strokeLinecap="round" />
+                    {/* Watery crying eyes */}
+                    <ellipse cx="94" cy="120" rx="9" ry="10" fill="#1E293B" />
+                    <circle cx="91" cy="116" r="3.5" fill="#FFF" />
+                    <circle cx="97" cy="122" r="2" fill="#FFF" />
+                    <ellipse cx="146" cy="120" rx="9" ry="10" fill="#1E293B" />
+                    <circle cx="143" cy="116" r="3.5" fill="#FFF" />
+                    <circle cx="149" cy="122" r="2" fill="#FFF" />
+                    {/* Waterfall tears streaming down cheeks */}
+                    <path d="M 89 126 C 87 135 88 145 90 154 C 92 158 97 158 98 154 C 100 145 101 135 99 126 Z" fill="#38BDF8" opacity="0.85" className="animate-tear-flow" />
+                    <path d="M 141 126 C 139 135 140 145 142 154 C 144 158 149 158 150 154 C 152 145 153 135 151 126 Z" fill="#38BDF8" opacity="0.85" className="animate-tear-flow" />
+                    {/* Tear drop below cheeks */}
+                    <path d="M 94 156 C 94 156 97 162 97 165 C 97 167 95 169 94 169 C 92 169 91 167 91 165 Z" fill="#38BDF8" className="animate-tear-drop" />
+                    <path d="M 146 156 C 146 156 149 162 149 165 C 149 167 147 169 146 169 C 144 169 143 167 143 165 Z" fill="#38BDF8" className="animate-tear-drop" />
+                    {/* Pitiful sobbing wailing mouth */}
+                    <path d="M 110 142 Q 120 136 130 142 Q 125 153 115 153 Z" fill="#BE123C" stroke="#1E293B" strokeWidth="2.5" />
+                    <path d="M 115 149 Q 120 146 125 149 Z" fill="#FDA4AF" />
+                  </g>
+                )}
+
+                {/* Cheeks */}
+                <circle cx="82" cy="132" r="7" fill="#F472B6" opacity="0.6" />
+                <circle cx="158" cy="132" r="7" fill="#F472B6" opacity="0.6" />
+
+                {/* Ultrasonic Sensor & Lid */}
+                <g className={level === 'full' ? 'origin-[40px_55px] -rotate-6' : ''}>
+                  <rect x="42" y="52" width="156" height="15" rx="7" fill="#93C5FD" stroke={theme.stroke} strokeWidth="4" />
+                  <rect x="100" y="32" width="40" height="20" rx="4" fill="#334155" />
+                  <circle cx="110" cy="42" r="5" fill="#94A3B8" />
+                  <circle cx="130" cy="42" r="5" fill="#94A3B8" />
+                  <path d="M 105 24 Q 120 20 135 24" fill="none" stroke="#38BDF8" strokeWidth="2" />
+                </g>
+              </svg>
+            </div>
+            <p className="text-xs text-slate-400 mt-2">통통이를 클릭하면 쓰레기를 살짝 더 버려요!</p>
+          </div>
+
+          {/* Ultrasonic Sensor Live Metrics */}
+          <div className="bg-white/80 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-slate-200/80">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+              <span className="font-bold text-sm text-slate-700">초음파 수위 실시간 수치</span>
+              <span className={"text-xs font-bold px-2.5 py-0.5 rounded-full " + theme.badge}>
+                {level === 'comfortable' ? '여유 단계' : level === 'warning' ? '주의 단계' : '가득 참 단계'}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                <span className="text-[11px] text-slate-500">측정 거리</span>
+                <p className="font-mono font-bold text-lg text-slate-800">{distance.toFixed(1)} <span className="text-xs">cm</span></p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                <span className="text-[11px] text-slate-500">적재 용량</span>
+                <p className={"font-mono font-bold text-lg " + theme.text}>{percentage}%</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                <span className="text-[11px] text-slate-500">남은 공간</span>
+                <p className="font-mono font-bold text-lg text-slate-800">{Math.max(0, distance - 5).toFixed(1)} <span className="text-xs">cm</span></p>
+              </div>
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="bg-white/80 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+            {/* Empty Button */}
+            <button
+              onClick={handleEmpty}
+              className={"w-full h-14 rounded-2xl font-jua text-lg text-white shadow-md active:scale-95 transition-all " + (level === 'full' ? 'bg-rose-500 hover:bg-rose-600 ring-4 ring-rose-200' : 'bg-emerald-500 hover:bg-emerald-600')}
+            >
+              🧹 통통이 비우기 (리셋)
+            </button>
+
+            {/* Slider */}
+            <div>
+              <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                <span>초음파 수위 슬라이더</span>
+                <span className="font-mono">{percentage}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={percentage}
+                onChange={(e) => setPercentage(Number(e.target.value))}
+                className="w-full accent-pink-500 h-2 bg-slate-200 rounded-lg cursor-pointer"
+              />
+            </div>
+
+            {/* Quick Add Buttons */}
+            <div>
+              <span className="text-xs font-bold text-slate-700 block mb-2">쓰레기 버리기 (퐁당!)</span>
+              <div className="grid grid-cols-4 gap-2">
+                <button onClick={() => handleAdd(6)} className="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold">☕ 컵 +6%</button>
+                <button onClick={() => handleAdd(10)} className="p-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-200 text-xs font-bold">🥫 캔 +10%</button>
+                <button onClick={() => handleAdd(18)} className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-bold">🍱 밥 +18%</button>
+                <button onClick={() => handleAdd(26)} className="p-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold">📦 박스 +26%</button>
+              </div>
+            </div>
+
+            {/* Simulation toggle */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-xs text-slate-500">실시간 자동 쓰레기 누적</span>
+              <button
+                onClick={() => setIsSimulating(!isSimulating)}
+                className={"px-3 py-1.5 rounded-xl text-xs font-bold border " + (isSimulating ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-slate-100 text-slate-700 border-slate-200')}
+              >
+                {isSimulating ? '⏸ 자동 누적 중지' : '▶ 자동 누적 시작'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
